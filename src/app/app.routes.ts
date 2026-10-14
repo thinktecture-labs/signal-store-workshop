@@ -21,17 +21,4 @@ export const routes: Routes = [
     path: 'todos',
     loadComponent: () => import('./components/todo-list/todo-list'),
   },
-  // Lab solutions wired to the Redux DevTools, not linked in the navigation
-  {
-    path: 'demo/media',
-    loadComponent: () =>
-      import(
-        '../../exercises/03-media-store/solution/media-overview-with-store'
-      ),
-  },
-  {
-    path: 'demo/todo',
-    loadComponent: () =>
-      import('../../exercises/01-todo-store/solution/todo-list-with-store'),
-  },
 ];

@@ -1,23 +1,27 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Todo } from '../../models/todo.model';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatDividerModule } from '@angular/material/divider';
+import { TodoStore } from './todo-store';
 
+/**
+ * TodoList refactored to use the TodoStore.
+ * Same template and styles as src/app/components/todo, the component signals
+ * and methods are replaced by the store.
+ */
 @Component({
-  selector: 'app-todo',
+  selector: 'app-todo-list',
   templateUrl: './todo-list.html',
-  styleUrls: ['./todo-list.scss'],
+  styleUrl: './todo-list.scss',
   imports: [
     FormsModule,
-    ReactiveFormsModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
@@ -27,107 +31,44 @@ import { Todo } from '../../models/todo.model';
     MatButtonToggleModule,
     MatDividerModule,
   ],
+  providers: [TodoStore],
 })
 export default class TodoList {
-  private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  protected readonly store = inject(TodoStore);
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly newTodoTitle = signal('');
-
-  // Private signals for internal state management
-  private readonly todosSignal = signal<Todo[]>([
-    {
-      id: '1',
-      title: 'Learn Angular Signals',
-      completed: false,
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      title: 'Learn NgRx Signal Store',
-      completed: false,
-      createdAt: new Date(),
-    },
-  ]);
-  private readonly filterSignal = signal<'all' | 'active' | 'completed'>('all');
-
-  // Public read-only signals
-  readonly todos = this.todosSignal.asReadonly();
-  readonly filter = this.filterSignal.asReadonly();
-
-  // Computed signals for derived state
-  readonly filteredTodos = computed(() => {
-    const filter = this.filterSignal();
-    const todos = this.todosSignal();
-
-    switch (filter) {
-      case 'active':
-        return todos.filter((todo) => !todo.completed);
-      case 'completed':
-        return todos.filter((todo) => todo.completed);
-      default:
-        return todos;
-    }
-  });
-
-  readonly completedCount = computed(
-    () => this.todosSignal().filter((todo) => todo.completed).length,
-  );
-
-  readonly activeCount = computed(
-    () => this.todosSignal().filter((todo) => !todo.completed).length,
-  );
 
   addTodo() {
     const title = this.newTodoTitle().trim();
     if (!title) {
       return;
     }
-    const newTodo: Todo = {
-      id: crypto.randomUUID(),
-      title,
-      completed: false,
-      createdAt: new Date(),
-    };
 
-    this.todosSignal.update((todos) => [...todos, newTodo]);
-    this.notify(`Added todo: ${newTodo.title}`);
+    const todo = this.store.addTodo(title);
     this.newTodoTitle.set('');
+    this.notify(`Added todo: ${todo.title}`);
   }
 
   toggleTodo(id: string) {
-    this.todosSignal.update((todos) =>
-      todos.map((todo) => {
-        if (todo.id === id) {
-          const updated = { ...todo, completed: !todo.completed };
-          const status = updated.completed ? 'completed' : 'active';
-          this.notify(`Marked "${todo.title}" as ${status}`);
-          return updated;
-        }
-        return todo;
-      }),
-    );
-  }
-
-  removeTodo(id: string) {
-    const todoToRemove = this.todosSignal().find((todo) => todo.id === id);
-    if (todoToRemove) {
-      this.todosSignal.update((todos) =>
-        todos.filter((todo) => todo.id !== id),
+    const todo = this.store.toggleTodo(id);
+    if (todo) {
+      this.notify(
+        `Marked "${todo.title}" as ${todo.completed ? 'completed' : 'active'}`,
       );
-      this.notify(`Removed todo: ${todoToRemove.title}`);
     }
   }
 
-  setFilter(filter: 'all' | 'active' | 'completed') {
-    this.filterSignal.set(filter);
+  removeTodo(id: string) {
+    const todo = this.store.removeTodo(id);
+    if (todo) {
+      this.notify(`Removed todo: ${todo.title}`);
+    }
   }
 
   clearCompleted() {
-    const count = this.completedCount();
+    const count = this.store.clearCompleted();
     if (count > 0) {
-      this.todosSignal.update((todos) =>
-        todos.filter((todo) => !todo.completed),
-      );
       this.notify(`Cleared ${count} completed todo${count === 1 ? '' : 's'}`);
     }
   }
