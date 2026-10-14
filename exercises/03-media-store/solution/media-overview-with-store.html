@@ -1,0 +1,35 @@
+<div class="container">
+  <mat-form-field class="search-field">
+    <mat-label>Search movies and TV shows</mat-label>
+    <input
+      matInput
+      [formField]="searchForm.query"
+      placeholder="Enter title..."
+    />
+    @if (store.isLoading()) {
+    <mat-spinner matSuffix diameter="20" />
+    }
+  </mat-form-field>
+
+  <mat-tab-group>
+    <mat-tab label="Movies">
+      <div class="grid-container">
+        @for (movie of store.movies(); track movie.id) {
+        <app-movie-card [movie]="movie" />
+        } @empty {
+        <div class="no-results">No movies found</div>
+        }
+      </div>
+    </mat-tab>
+
+    <mat-tab label="TV Shows">
+      <div class="grid-container">
+        @for (show of store.shows(); track show.id) {
+        <app-show-card [show]="show" />
+        } @empty {
+        <div class="no-results">No shows found</div>
+        }
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

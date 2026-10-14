@@ -1,0 +1,50 @@
+{
+  "name": "ngrx-signal-store-workshop",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve --proxy-config proxy.conf.mjs",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "lint": "ng lint",
+    "format": "prettier --write ."
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/cdk": "^22.2.2",
+    "@angular/common": "^22.2.2",
+    "@angular/compiler": "^22.2.2",
+    "@angular/core": "^22.2.2",
+    "@angular/forms": "^22.2.2",
+    "@angular/material": "^22.2.2",
+    "@angular/platform-browser": "^22.2.2",
+    "@angular/router": "^22.2.2",
+    "@ngrx-toolkit/core": "^22.0.1",
+    "@ngrx/operators": "^22.0.1",
+    "@ngrx/signals": "^22.0.1",
+    "dotenv": "^17.0.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.2.2",
+    "@angular/cli": "^22.2.2",
+    "@angular/compiler-cli": "^22.2.2",
+    "@ngrx/eslint-plugin": "^22.0.1",
+    "@typescript-eslint/utils": "^8.71.1",
+    "angular-eslint": "^22.5.0",
+    "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.1",
+    "istanbul-lib-instrument": "^6.0.3",
+    "prettier": "3.6.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1"
+  },
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "esbuild": true,
+    "fsevents": true,
+    "lmdb": true,
+    "msgpackr-extract": true
+  }
+}

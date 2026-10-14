@@ -1,0 +1,23 @@
+<mat-toolbar color="primary">
+  <span>{{ title }}</span>
+  <nav class="nav-items">
+    <a
+      mat-button
+      routerLink="/"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }"
+    >
+      <mat-icon class="nav-icon">video_library</mat-icon>
+      Media
+    </a>
+    <a mat-button routerLink="/watchlist" routerLinkActive="active">
+      <mat-icon class="nav-icon">bookmarks</mat-icon>
+      Watchlist
+    </a>
+    <a mat-button routerLink="/todos" routerLinkActive="active">
+      <mat-icon class="nav-icon">check_circle</mat-icon>
+      Todos
+    </a>
+  </nav>
+  <span class="spacer"></span>
+</mat-toolbar>
