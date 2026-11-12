@@ -1,0 +1,48 @@
+<h2>Watchlist ({{ store.watchlist().length }})</h2>
+
+<div>
+  <h3>Watched Items ({{ store.watchedItems().length }})</h3>
+  <ul>
+    @for (item of store.watchedItems(); track item.id) {
+    <li>
+      {{ item.title }}
+      <button
+        mat-button
+        color="primary"
+        (click)="toggleWatched(item.id, item.type)"
+      >
+        Mark as Unwatched
+      </button>
+      <button mat-button color="warn" (click)="remove(item.id, item.type)">
+        Remove
+      </button>
+    </li>
+    }
+  </ul>
+</div>
+
+<div>
+  <h3>Unwatched Items ({{ store.unwatchedItems().length }})</h3>
+  <ul>
+    @for (item of store.unwatchedItems(); track item.id) {
+    <li>
+      {{ item.title }}
+      <button
+        mat-button
+        color="primary"
+        (click)="toggleWatched(item.id, item.type)"
+      >
+        Mark as Watched
+      </button>
+      <button mat-button color="warn" (click)="remove(item.id, item.type)">
+        Remove
+      </button>
+    </li>
+    }
+  </ul>
+</div>
+
+<!-- Example button to add a mock item to the watchlist -->
+<button mat-raised-button color="accent" (click)="addMockMovie()">
+  Add Sample Movie
+</button>

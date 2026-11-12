@@ -1,0 +1,60 @@
+.todo-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.todo-card {
+  width: 100%;
+}
+
+.todo-card mat-card-header {
+  margin-bottom: 1rem;
+}
+
+.todo-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: center;
+}
+
+.full-width {
+  flex: 1;
+}
+
+.filter-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.todo-list {
+  margin-top: 1.5rem;
+}
+
+.todo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+}
+
+.completed {
+  text-decoration: line-through;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 2rem 0;
+}
+
+.divider {
+  margin: 1rem 0;
+}
