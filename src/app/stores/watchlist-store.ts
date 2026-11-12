@@ -1,118 +1,110 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-object-type -- remove this line once the TODOs are done */
 import { computed } from '@angular/core';
 import {
   patchState,
   signalStore,
+  type,
   withComputed,
   withMethods,
-  withState,
 } from '@ngrx/signals';
+import {
+  addEntity,
+  entityConfig,
+  removeEntity,
+  updateEntity,
+  withEntities,
+} from '@ngrx/signals/entities';
 import { WatchlistItem } from '../models/watchlist.model';
 
-// TODO: Define the state interface for the watchlist
-export interface WatchlistState {
-  // Define the shape of your state here
-  // Hint: It should include an array of WatchlistItem
-}
+type MediaType = WatchlistItem['type'];
 
-// TODO: Define the initial state
-const initialState: WatchlistState = {
-  // Initialize your state here
-};
+// A movie and a TV show can share a TMDB id, so the entity id combines type and id
+const watchlistId = (id: number, type: MediaType) => `${type}-${id}`;
 
-// TODO: Create the WatchlistStore using signalStore
-// Remove the prettier-ignore once the TODOs are done
-// prettier-ignore
+const watchlistEntity = entityConfig({
+  entity: type<WatchlistItem>(),
+  selectId: (item) => watchlistId(item.id, item.type),
+});
+
+// Create the WatchlistStore using signalStore.
+// User feedback stays in the components: the methods return what they changed.
 export const WatchlistStore = signalStore(
-  // TODO: Make the store injectable at the root level
+  // Root singleton: the watchlist button on every card and the watchlist page share it
+  { providedIn: 'root' },
 
-  // TODO: Add the initial state using withState
+  // withEntities replaces the array: it adds entityMap, ids and entities
+  withEntities(watchlistEntity),
 
-  // TODO: Add computed properties using withComputed
-  // Hint: Convert the existing computed properties from WatchlistService
+  // Add computed properties using withComputed
+  withComputed(({ entities }) => ({
+    // Same public API as the WatchlistService
+    watchlist: entities,
+    watchedItems: computed(() => entities().filter((item) => item.isWatched)),
+    unwatchedItems: computed(() =>
+      entities().filter((item) => !item.isWatched),
+    ),
+  })),
 
-  // TODO: Add methods using withMethods
-  // Hint: Convert the existing methods from WatchlistService. Return the item each method
-  // changed instead of showing a snackbar; the messages move into the components.
+  // Add methods using withMethods
+  withMethods((store) => ({
+    addToWatchlist(
+      item: Omit<WatchlistItem, 'isWatched' | 'addedAt'>,
+    ): WatchlistItem | undefined {
+      if (store.entityMap()[watchlistId(item.id, item.type)]) {
+        return undefined;
+      }
+
+      const newItem: WatchlistItem = {
+        ...item,
+        isWatched: false,
+        addedAt: new Date(),
+      };
+
+      patchState(store, addEntity(newItem, watchlistEntity));
+
+      return newItem;
+    },
+
+    removeFromWatchlist(
+      id: number,
+      type: MediaType,
+    ): WatchlistItem | undefined {
+      const item = store.entityMap()[watchlistId(id, type)];
+      if (!item) {
+        return undefined;
+      }
+
+      patchState(store, removeEntity(watchlistId(id, type)));
+
+      return item;
+    },
+
+    toggleWatchedStatus(
+      id: number,
+      type: MediaType,
+    ): WatchlistItem | undefined {
+      const key = watchlistId(id, type);
+      if (!store.entityMap()[key]) {
+        return undefined;
+      }
+
+      patchState(
+        store,
+        updateEntity(
+          { id: key, changes: (item) => ({ isWatched: !item.isWatched }) },
+          watchlistEntity,
+        ),
+      );
+
+      return store.entityMap()[key];
+    },
+
+    // Lookups by id read the entity map instead of scanning the list
+    isInWatchlist(id: number, type: MediaType): boolean {
+      return watchlistId(id, type) in store.entityMap();
+    },
+
+    getWatchedStatus(id: number, type: MediaType): boolean {
+      return store.entityMap()[watchlistId(id, type)]?.isWatched ?? false;
+    },
+  })),
 );
-
-/**
- * Reference implementation of the existing WatchlistService:
- *
- * @Injectable({
- *   providedIn: 'root',
- * })
- * export class WatchlistService {
- *   private readonly watchlistSignal = signal<WatchlistItem[]>([]);
- *   private readonly snackBar = inject(MatSnackBar);
- *
- *   readonly watchlist = this.watchlistSignal.asReadonly();
- *
- *   readonly watchedItems = computed(() =>
- *     this.watchlistSignal().filter((item) => item.isWatched),
- *   );
- *
- *   readonly unwatchedItems = computed(() =>
- *     this.watchlistSignal().filter((item) => !item.isWatched),
- *   );
- *
- *   addToWatchlist(item: Omit<WatchlistItem, 'isWatched' | 'addedAt'>) {
- *     const newItem: WatchlistItem = {
- *       ...item,
- *       isWatched: false,
- *       addedAt: new Date(),
- *     };
- *
- *     this.watchlistSignal.update((items) => {
- *       if (items.some((i) => i.id === item.id && i.type === item.type)) {
- *         return items;
- *       }
- *
- *       this.snackBar.open(`Added ${item.title} to watchlist`, 'Close');
- *       return [...items, newItem];
- *     });
- *   }
- *
- *   removeFromWatchlist(id: number, type: 'movie' | 'tv') {
- *     const item = this.watchlistSignal().find(
- *       (i) => i.id === id && i.type === type,
- *     );
- *     if (item) {
- *       this.watchlistSignal.update((items) => {
- *         const filtered = items.filter((i) => !(i.id === id && i.type === type));
- *         this.snackBar.open(`Removed ${item.title} from watchlist`, 'Close');
- *         return filtered;
- *       });
- *     }
- *   }
- *
- *   toggleWatchedStatus(id: number, type: 'movie' | 'tv') {
- *     this.watchlistSignal.update((items) =>
- *       items.map((item) => {
- *         if (item.id === id && item.type === type) {
- *           const newStatus = !item.isWatched;
- *           this.snackBar.open(
- *             `Marked ${item.title} as ${newStatus ? 'watched' : 'unwatched'}`,
- *             'Close',
- *           );
- *           return { ...item, isWatched: newStatus };
- *         }
- *         return item;
- *       }),
- *     );
- *   }
- *
- *   isInWatchlist(id: number, type: 'movie' | 'tv'): boolean {
- *     return this.watchlistSignal().some(
- *       (item) => item.id === id && item.type === type,
- *     );
- *   }
- *
- *   getWatchedStatus(id: number, type: 'movie' | 'tv'): boolean {
- *     const item = this.watchlistSignal().find(
- *       (item) => item.id === id && item.type === type,
- *     );
- *     return item?.isWatched ?? false;
- *   }
- * }
- */

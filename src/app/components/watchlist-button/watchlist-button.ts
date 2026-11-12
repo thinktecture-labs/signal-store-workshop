@@ -1,7 +1,8 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { WatchlistService } from '../../services/watchlist-service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { WatchlistStore } from '../../stores/watchlist-store';
 
 @Component({
   selector: 'app-watchlist-button',
@@ -22,7 +23,8 @@ import { WatchlistService } from '../../services/watchlist-service';
   ],
 })
 export class WatchlistButton {
-  private readonly watchlistService = inject(WatchlistService);
+  private readonly store = inject(WatchlistStore);
+  private readonly snackBar = inject(MatSnackBar);
 
   readonly itemId = input.required<number>();
   readonly itemType = input.required<'movie' | 'tv'>();
@@ -30,19 +32,29 @@ export class WatchlistButton {
   readonly posterPath = input.required<string>();
 
   readonly isInWatchlist = computed(() =>
-    this.watchlistService.isInWatchlist(this.itemId(), this.itemType()),
+    this.store.isInWatchlist(this.itemId(), this.itemType()),
   );
 
   toggleWatchlist(): void {
     if (this.isInWatchlist()) {
-      this.watchlistService.removeFromWatchlist(this.itemId(), this.itemType());
-    } else {
-      this.watchlistService.addToWatchlist({
-        id: this.itemId(),
-        type: this.itemType(),
-        title: this.title(),
-        posterPath: this.posterPath(),
-      });
+      const item = this.store.removeFromWatchlist(
+        this.itemId(),
+        this.itemType(),
+      );
+      if (item) {
+        this.snackBar.open(`Removed ${item.title} from watchlist`, 'Close');
+      }
+      return;
+    }
+
+    const item = this.store.addToWatchlist({
+      id: this.itemId(),
+      type: this.itemType(),
+      title: this.title(),
+      posterPath: this.posterPath(),
+    });
+    if (item) {
+      this.snackBar.open(`Added ${item.title} to watchlist`, 'Close');
     }
   }
 }

@@ -3,9 +3,10 @@
     <mat-card-header>
       <mat-card-title>Todo List</mat-card-title>
       <mat-card-subtitle>
-        @if (todos().length > 0) {
+        @if (store.todos().length > 0) {
         <span>
-          {{ activeCount() }} active / {{ completedCount() }} completed
+          {{ store.activeCount() }} active / {{ store.completedCount() }}
+          completed
         </span>
         }
       </mat-card-subtitle>
@@ -52,8 +53,8 @@
       <!-- Filters -->
       <div class="filter-container">
         <mat-button-toggle-group
-          [value]="filter()"
-          (change)="setFilter($event.value)"
+          [value]="store.filter()"
+          (change)="store.setFilter($event.value)"
           aria-label="Todo Filter"
         >
           <mat-button-toggle value="all">All</mat-button-toggle>
@@ -65,7 +66,7 @@
           mat-button
           color="warn"
           (click)="clearCompleted()"
-          [disabled]="completedCount() === 0"
+          [disabled]="store.completedCount() === 0"
         >
           Clear Completed
         </button>
@@ -73,11 +74,11 @@
 
       <!-- Todo List -->
       <div class="todo-list">
-        @if (filteredTodos().length === 0) {
+        @if (store.filteredTodos().length === 0) {
         <div class="empty-state">
           <p>No todos to display</p>
         </div>
-        } @else { @for (todo of filteredTodos(); track todo.id) {
+        } @else { @for (todo of store.filteredTodos(); track todo.id) {
         <div class="todo-item">
           <mat-checkbox
             [checked]="todo.completed"
